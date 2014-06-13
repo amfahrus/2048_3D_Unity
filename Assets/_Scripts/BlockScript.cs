@@ -56,10 +56,12 @@ public class BlockScript : MonoBehaviour {
 		this.blockNumber = blockNumber;
 		TextMesh textMesh = this.GetComponentInChildren<TextMesh>();
 		if (blockNumber == -1 ) {
+			textMesh.color = new Color(1, 1, 1);
 			textMesh.text = "";
 			transform.position = new Vector3(0,0,100);
 		}
 		else {
+			textMesh.color = new Color(0, 0, 1);
 			textMesh.text = blockNumber.ToString();
 			transform.position = this.originalPosition;
 		}

@@ -67,7 +67,7 @@ public class GameControllerScript : MonoBehaviour {
 		int x; 
 		int y; 
 		int z;
-		yOffset = 2F;
+		yOffset = 1F;
 		Transform blockInstance;
 		BlockScript blockScript; 
 		Transform connectorInstance;
@@ -95,10 +95,10 @@ public class GameControllerScript : MonoBehaviour {
 		for(int i=0; i <=2; i++) {
 			for(int j=0; j<= 2; j++) {
 				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;
-				connectorInstance.renderer.material.color = new Color(0,0,0.4f);
+				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
 				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, j * this.scale + this.yOffset, this.scale), Quaternion.identity) as Transform;	
 				connectorInstance.Rotate(new Vector3(90,0,0));
-				connectorInstance.renderer.material.color = new Color(0.4f,0,0);
+				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
 				connectorInstance = Instantiate (connector, new Vector3(this.scale, i * this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;	
 				connectorInstance.Rotate(new Vector3(0,0,90));
 				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
@@ -556,10 +556,10 @@ public class GameControllerScript : MonoBehaviour {
 	void ShowGame() {
 		GUI.skin = currentGUISkin;
 		this.gameLight.intensity = 4;
-		this.mainCamera.transform.eulerAngles = new Vector3 (15, 23, 0);
+		this.mainCamera.transform.eulerAngles = new Vector3 (19F, 29.5F, 0);
 
 		GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "Score: " + this.score.ToString (), "BigLabel");
-		string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + "/" + this.getHighestBlock ().ToString ();
+		string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + " / " + this.getHighestBlock ().ToString ();
 		GUI.Label (new Rect (0, Screen.height * 0.06F, Screen.width, Screen.height / 10), highScoreText, "SmallLabel");
 
 

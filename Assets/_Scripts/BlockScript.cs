@@ -62,6 +62,7 @@ public class BlockScript : MonoBehaviour {
 		}
 		else {
 			textMesh.color = new Color(0, 0, 1);
+			if(blockNumber == 0) textMesh.color = new Color(1,1,1);
 			textMesh.text = blockNumber.ToString();
 			transform.position = this.originalPosition;
 		}
@@ -71,7 +72,7 @@ public class BlockScript : MonoBehaviour {
 
 	private Color getColor(int num) {
 		
-		if (num == 0) return HexToColor ("333333");
+		if (num == 0) return HexToColor ("000055");
 		if (num == 2) return HexToColor ("ccccff");
 		if (num == 4) return HexToColor ("99ffff");
 		if (num == 8) return HexToColor ("66ffb2");

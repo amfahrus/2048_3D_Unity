@@ -55,14 +55,15 @@ public class BlockScript : MonoBehaviour {
 	public void setBlockNumber(int blockNumber) {
 		this.blockNumber = blockNumber;
 		TextMesh textMesh = this.GetComponentInChildren<TextMesh>();
+		Material blockTextMaterial = gameObject.transform.Find ("BlockText").gameObject.renderer.material;
 		if (blockNumber == -1 ) {
 			textMesh.color = new Color(1, 1, 1);
 			textMesh.text = "";
 			transform.position = new Vector3(0,0,100);
 		}
 		else {
-			textMesh.color = new Color(0, 0, 1);
-			if(blockNumber == 0) textMesh.color = new Color(1,1,1);
+			blockTextMaterial.SetColor ("_Color", new Color(0.1f,0.1f,1));
+			if(blockNumber == 0) blockTextMaterial.SetColor ("_Color", new Color(0.8f,0.8f,1));
 			textMesh.text = blockNumber.ToString();
 			transform.position = this.originalPosition;
 		}

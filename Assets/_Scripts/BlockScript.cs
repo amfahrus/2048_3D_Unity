@@ -3,6 +3,9 @@ using System.Collections;
 
 public class BlockScript : MonoBehaviour {
 
+	public int x; //index along x axis
+	public int y; //index along y axis
+	public int z; //index along z axis
 	public int blockNumber;  //number displayed on the block (-1 for no number)
 	public Vector3 originalPosition;  //orginal position of the block
 	private int moveNewBlockNumber; //number to change to once the move has been completed

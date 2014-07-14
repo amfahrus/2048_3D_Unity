@@ -608,17 +608,20 @@ public class GameControllerScript : MonoBehaviour {
 		string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + " / " + this.getHighestBlock ().ToString ();
 		GUI.Label (new Rect (0, Screen.height * 0.06F, Screen.width, Screen.height / 10), highScoreText, "SmallLabel");
 
+		
+		GUIStyle style = currentGUISkin.GetStyle ("button");
+		style.fontSize = 14;
 
-		if (GUI.Button(new Rect(1, Screen.height * 0.93F, Screen.width * 0.4F, Screen.height * 0.06F),"Options")) {
+		if (GUI.Button(new Rect(1, Screen.height * 0.12F, Screen.width * 0.30F, Screen.height * 0.06F),"Options")) {
 			this.gameView = "options";
 		}
-		if (GUI.Button(new Rect(1, Screen.height * 0.86F, Screen.width * 0.4F, Screen.height * 0.06F),"Instructions")) {
+		if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.12F, Screen.width * 0.33F, Screen.height * 0.06F),"Instructions")) {
 			this.gameView = "instructions";
 		}
-		if (GUI.Button(new Rect(Screen.width * 2 / 3, Screen.height * 0.93F, Screen.width / 3, Screen.height * 0.06F), "Restart")) {
+		if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .30f, Screen.height * 0.06F), "Restart")) {
 			this.restart();
 		}
-		if (GUI.Button(new Rect(Screen.width * 2 / 3, Screen.height * 0.86F, Screen.width / 3, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
+		if (GUI.Button(new Rect(Screen.width * .05f, Screen.height * 0.90F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
 			this.undo();
 		}
 	}

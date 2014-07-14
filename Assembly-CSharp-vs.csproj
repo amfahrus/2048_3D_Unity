@@ -49,12 +49,7 @@
      <Compile Include="Assets\Materials\FixFontScript.cs" />
      <Compile Include="Assets\_Scripts\BlockScript.cs" />
      <Compile Include="Assets\_Scripts\GameControllerScript.cs" />
-     <Compile Include="Assets\_Scripts\InstructionButtonScript.cs" />
-     <Compile Include="Assets\_Scripts\InstructionTextScript.cs" />
      <Compile Include="Assets\_Scripts\MoveControlScript.cs" />
-     <Compile Include="Assets\_Scripts\NewBehaviourScript.cs" />
-     <Compile Include="Assets\_Scripts\OptionsScript.cs" />
-     <Compile Include="Assets\_Scripts\RestartScript.cs" />
      <Compile Include="Assets\_Scripts\SwipeListenerScript.cs" />
      <None Include="Assets\Materials\3DText.shader" />
   </ItemGroup>

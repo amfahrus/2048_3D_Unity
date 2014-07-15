@@ -79,7 +79,6 @@ public class GameControllerScript : MonoBehaviour {
 
 		this.sizeGUI();
 		this.InitOptions ();
-		this.setScore (0);
 
 		//instantiate the blocks and position them
 		for (x = 0; x <= 2; x++) {
@@ -113,8 +112,12 @@ public class GameControllerScript : MonoBehaviour {
 		}
 
 		//instantiate the move blocks
-		this.restart ();
-
+		if (PlayerPrefs.HasKey ("game_status")) {
+			this.loadSavedGame();
+		}
+		else {
+			this.restart ();
+		}
 	}
 
 	void setBlockNumber ( Transform blockInstance ,   int blockNumber  ){
@@ -160,9 +163,8 @@ public class GameControllerScript : MonoBehaviour {
 			}
 			else {
 				newNumber = Random.Range(1,3) * 2;
-				this.setBlockNumber(emptyBlocks[emptyIndex], Random.Range(1,3) * 2);
 			}
-			this.setBlockNumber(emptyBlocks[emptyIndex], Random.Range(0,3) * 2);
+			this.setBlockNumber(emptyBlocks[emptyIndex], newNumber);
 			blockScript = emptyBlocks[emptyIndex].GetComponent("BlockScript") as BlockScript;
 			x = blockScript.x;
 			y = blockScript.y;
@@ -174,7 +176,7 @@ public class GameControllerScript : MonoBehaviour {
 		return false;	
 	}
 
-	public void doMove (string axis, int direction) {
+	public bool doMove (string axis, int direction) {
 		int loop1, loop2;  //looping variables
 		int x, y, z;  //block location variables
 		int numMoves = 0; //number of moves to make
@@ -185,6 +187,9 @@ public class GameControllerScript : MonoBehaviour {
 		IDictionary<string, int> newNumbers = new Dictionary<string, int>(); //new numbers for blocks a,b & c to have
 		IDictionary<string, int> shiftBy = new Dictionary<string, int>(); //distance for blocks a,b & c to shift
 		int[,,] numbersAfterMove = new int[3,3,3];
+
+		if (PlayerPrefs.GetString ("game_status") != "playing")
+						return false;
 
 		//loop through each of the 9 rows to be calculated 
 		for(loop1 = 0; loop1 <=2; loop1++) {
@@ -239,9 +244,23 @@ public class GameControllerScript : MonoBehaviour {
 
 				numMoves = numMoves + shiftBy["a"] + shiftBy["b"] + shiftBy["c"];
 				if (blockCollision) blockCollisionSound = true;
-				if(newNumbers["a"] > this.getHighestBlock()) this.SetHighestBlock(newNumbers["a"]);
-				if(newNumbers["b"] > this.getHighestBlock()) this.SetHighestBlock(newNumbers["b"]);
-				if(newNumbers["c"] > this.getHighestBlock()) this.SetHighestBlock(newNumbers["c"]);
+
+				int newHighestBlock = 0;
+				if(newNumbers["a"] > PlayerPrefs.GetInt ("game_highest_block")) newHighestBlock = newNumbers["a"];
+				if(newNumbers["b"] > PlayerPrefs.GetInt ("game_highest_block")) newHighestBlock = newNumbers["b"];
+				if(newNumbers["c"] > PlayerPrefs.GetInt ("game_highest_block")) newHighestBlock = newNumbers["c"];
+
+				if (newHighestBlock > 0) {
+					PlayerPrefs.SetInt ("game_highest_block", newHighestBlock);
+					if (newHighestBlock == 2048) PlayerPrefs.SetString("game_status","game_won");
+					PlayerPrefs.Save ();
+					if (newHighestBlock > this.getHighestBlock()) this.SetHighestBlock(newHighestBlock);
+				}
+
+
+
+
+				PlayerPrefs.Save ();
 
 				//save the numbers after the move for redo
 				numbersAfterMove[blockA.GetComponent<BlockScript>().x,
@@ -257,6 +276,12 @@ public class GameControllerScript : MonoBehaviour {
 				                 blockC.GetComponent<BlockScript>().z] = newNumbers["c"];
 			}
 		}
+
+		if(blockCollisionSound && this.optionsPlaySounds) {
+			audio.clip = collideSound;
+			audio.PlayDelayed(this.moveDuration);
+		}
+
 		if (numMoves > 0) {
 			this.moveStartTime = Time.time;
 			this.setScore (this.score + scoreChange);
@@ -265,10 +290,10 @@ public class GameControllerScript : MonoBehaviour {
 				if (axis == "y") audio.PlayOneShot(swipeSoundY);
 				if (axis == "z") audio.PlayOneShot(swipeSoundZ);
 			}
+			return true;
 		}
-		if(blockCollisionSound && this.optionsPlaySounds) {
-			audio.clip = collideSound;
-			audio.PlayDelayed(this.moveDuration);
+		else {
+			return false;
 		}
 	}
 
@@ -385,18 +410,19 @@ public class GameControllerScript : MonoBehaviour {
 				this.moveStartTime = -1F;
 				if(this.getEmptyBlocks().Count == 0) {
 					if(this.CheckGameOver()) {
-						this.gameView = "game_over";
+						PlayerPrefs.SetString ("game_status", "game_over");
+						PlayerPrefs.Save();
 					}
 				}
 			}
 		}
-		
-		if (Input.GetKeyUp("right")) this.doMove ("x", 1);
-		if (Input.GetKeyUp("left")) this.doMove ("x", -1);
-		if (Input.GetKeyUp("up")) this.doMove ("y", 1);
-		if (Input.GetKeyUp("down")) this.doMove ("y", -1);
-		if (Input.GetKeyUp("a")) this.doMove ("z", 1);
-		if (Input.GetKeyUp("z")) this.doMove ("z", -1);
+		bool moved;
+		if (Input.GetKeyUp("right")) moved = this.doMove ("x", 1);
+		if (Input.GetKeyUp("left")) moved = this.doMove ("x", -1);
+		if (Input.GetKeyUp("up")) moved = this.doMove ("y", 1);
+		if (Input.GetKeyUp("down")) moved = this.doMove ("y", -1);
+		if (Input.GetKeyUp("a")) moved = this.doMove ("z", 1);
+		if (Input.GetKeyUp("z")) moved = this.doMove ("z", -1);
 
 		if (Input.GetKey(KeyCode.Escape))
 		{
@@ -409,6 +435,9 @@ public class GameControllerScript : MonoBehaviour {
 
 	void setScore(int score) {
 		this.score = score;
+		PlayerPrefs.SetInt ("score", score);
+
+		//handle setting high score
 		if(this.score > this.GetHighScore()) {
 			this.SetHighScore(this.score);
 		}
@@ -418,7 +447,6 @@ public class GameControllerScript : MonoBehaviour {
 		int[,,] positions = new int[3, 3, 3];
 		int x=0, y=0, z=0, newNumber=0;
 		this.gameLight.intensity = 4;
-		if(this.gameView == "game_over") { this.gameView = "game"; }
 
 		for (x = 0; x <= 2; x++) {
 			for (y = 0; y <= 2; y++) {
@@ -432,6 +460,10 @@ public class GameControllerScript : MonoBehaviour {
 		PlayerPrefs.SetString ("redo_moves1","");
 		PlayerPrefs.SetString ("redo_moves0","");
 		PlayerPrefs.SetInt ("redos", 2);
+		PlayerPrefs.SetString ("game_status", "playing");
+		PlayerPrefs.SetInt ("game_highest_block", 0);
+		PlayerPrefs.Save ();
+
 		this.fillRandomBlock(ref x, ref y, ref z, ref newNumber);
 		positions [x, y, z] = newNumber;
 		this.fillRandomBlock(ref x, ref y, ref z, ref newNumber);
@@ -569,9 +601,6 @@ public class GameControllerScript : MonoBehaviour {
 		if (this.gameView == "instructions") {
 			this.ShowInstructions();
 		}
-		if(this.gameView == "game_over") {
-			this.ShowGameOver();
-		}
 	}
 
 	void ShowInstructions() {
@@ -604,6 +633,19 @@ public class GameControllerScript : MonoBehaviour {
 		this.gameLight.intensity = 4;
 		this.mainCamera.transform.eulerAngles = new Vector3 (19F, 29.5F, 0);
 
+		if (PlayerPrefs.GetString ("game_status") == "game_over") {
+			GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
+			this.gameLight.intensity = 0;
+		}
+		if (PlayerPrefs.GetString ("game_status") == "game_won") {
+			GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "You Won!", "BigLabel");
+			if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.4F, Screen.width * 0.30F, Screen.height * 0.06F),"Continue")) {
+				PlayerPrefs.SetString ("game_status", "playing");
+				PlayerPrefs.Save ();
+			}
+			this.gameLight.intensity = 0;
+		}
+		
 		GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "Score: " + this.score.ToString (), "BigLabel");
 		string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + " / " + this.getHighestBlock ().ToString ();
 		GUI.Label (new Rect (0, Screen.height * 0.06F, Screen.width, Screen.height / 10), highScoreText, "SmallLabel");
@@ -684,12 +726,6 @@ public class GameControllerScript : MonoBehaviour {
 		}
 
 	}
-	void ShowGameOver() {
-		this.ShowGame ();
-		GUI.skin = currentGUISkin;
-		GUI.Label (new Rect (0, Screen.height /2 , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
-		this.gameLight.intensity = 0;
-	}
 
 
 	private void sizeGUI() {
@@ -709,7 +745,6 @@ public class GameControllerScript : MonoBehaviour {
 	private void InitOptions() {
 		if (!PlayerPrefs.HasKey ("options_use_0")) {
 			PlayerPrefs.SetInt ("options_use_0",1);
-			PlayerPrefs.Save();
 			this.optionsUse0 = true;
 			this.previousOptionsUse0 = true;
 		}
@@ -725,7 +760,6 @@ public class GameControllerScript : MonoBehaviour {
 		}
 		if (!PlayerPrefs.HasKey ("options_play_sounds")) {
 			PlayerPrefs.SetInt ("options_play_sounds",1);
-			PlayerPrefs.Save();
 			this.optionsPlaySounds = true;
 			this.previousOptionsPlaySounds = true;
 		}
@@ -739,6 +773,8 @@ public class GameControllerScript : MonoBehaviour {
 				this.previousOptionsPlaySounds = false;
 			}
 		}
+		
+		PlayerPrefs.Save();
 	}
 
 	private void saveHistory() {
@@ -753,8 +789,8 @@ public class GameControllerScript : MonoBehaviour {
 				}
 			}
 		}
-		//strip off the last comma
-		stringVal = stringVal.Substring (0, stringVal.Length - 1);
+		//add score and highest block to end of array
+		stringVal = stringVal + this.score.ToString() + "," + PlayerPrefs.GetInt ("game_highest_block").ToString();
 
 		PlayerPrefs.SetString ("redo_moves2",PlayerPrefs.GetString ("redo_moves1"));
 		PlayerPrefs.SetString ("redo_moves1",PlayerPrefs.GetString ("redo_moves0"));
@@ -765,7 +801,7 @@ public class GameControllerScript : MonoBehaviour {
 
 	private void undo() {
 		string[] positions = new string[27];
-		int positionNum = 0;
+		int myNum = 0;
 		char[] separator = {','};
 
 		if( PlayerPrefs.GetString ("redo_moves1") != "" && PlayerPrefs.GetInt ("redos") > 0) {
@@ -774,11 +810,19 @@ public class GameControllerScript : MonoBehaviour {
 			for (int x = 0; x <= 2; x++) {
 				for (int y = 0; y <= 2; y++) {
 					for (int z = 0; z <= 2; z++) {
-						int.TryParse(positions[9*x+3*y+z], out positionNum);
-						this.setBlockNumber(this.blocks[x,y,z],positionNum);
+						int.TryParse(positions[9*x+3*y+z], out myNum);
+						this.setBlockNumber(this.blocks[x,y,z],myNum);
 					}
 				}
 			}
+
+			//roll back the score
+			int.TryParse (positions[27], out myNum);
+			this.setScore (myNum);
+
+			//roll back the game_highest_block
+			int.TryParse (positions[28], out myNum);
+			PlayerPrefs.SetInt ("game_highest_block", myNum);
 
 			//move all the redo moves back
 			PlayerPrefs.SetString ("redo_moves0",PlayerPrefs.GetString ("redo_moves1"));
@@ -786,6 +830,24 @@ public class GameControllerScript : MonoBehaviour {
 			PlayerPrefs.SetString ("redo_moves2","");
 			PlayerPrefs.SetInt ("redos", PlayerPrefs.GetInt ("redos") - 1);
 		}
+	}
+
+	private void loadSavedGame() {
+		string[] positions = new string[27];
+		int positionNum = 0;
+		char[] separator = {','};
+		positions = PlayerPrefs.GetString ("redo_moves0").Split (separator);
+
+		for (int x = 0; x <= 2; x++) {
+			for (int y = 0; y <= 2; y++) {
+				for (int z = 0; z <= 2; z++) {
+					int.TryParse(positions[9*x+3*y+z], out positionNum);
+					this.setBlockNumber(this.blocks[x,y,z],positionNum);
+				}
+			}
+		}
+
+		this.setScore (PlayerPrefs.GetInt ("score"));
 	}
 }
 

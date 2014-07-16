@@ -50,6 +50,7 @@
      <Compile Include="Assets\_Scripts\BlockScript.cs" />
      <Compile Include="Assets\_Scripts\GameControllerScript.cs" />
      <Compile Include="Assets\_Scripts\MoveControlScript.cs" />
+     <Compile Include="Assets\_Scripts\OptionsScript.cs" />
      <Compile Include="Assets\_Scripts\SwipeListenerScript.cs" />
      <None Include="Assets\Materials\3DText.shader" />
   </ItemGroup>

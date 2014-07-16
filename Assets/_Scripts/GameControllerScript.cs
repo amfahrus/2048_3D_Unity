@@ -30,11 +30,11 @@ public class GameControllerScript : MonoBehaviour {
 	public AudioClip swipeSoundZ;
 	public AudioClip collideSound;
 
-	
-	private bool optionsUse0;
-	private bool previousOptionsUse0;
-	private bool optionsPlaySounds;
-	private bool previousOptionsPlaySounds;
+	private OptionsScript options;
+//	private bool optionsuse_0;
+//	private bool previousOptionsuse_0;
+//	private bool optionsPlaySounds;
+//	private bool previousOptionsPlaySounds;
 
 	//instruction text
 	private string instructionText = @"The object of 2048-3D is to"
@@ -77,8 +77,9 @@ public class GameControllerScript : MonoBehaviour {
 		Transform connectorInstance;
 		TextMesh textMesh;
 
+		
+		this.options = this.gameObject.GetComponent ("OptionsScript") as OptionsScript;
 		this.sizeGUI();
-		this.InitOptions ();
 
 		//instantiate the blocks and position them
 		for (x = 0; x <= 2; x++) {
@@ -158,7 +159,7 @@ public class GameControllerScript : MonoBehaviour {
 
 		if (emptyBlocks.Count > 0) {
 			emptyIndex = Random.Range(0, emptyBlocks.Count);
-			if(this.optionsUse0) {
+			if(this.options.use_0) {
 				newNumber = Random.Range(0,3) * 2;
 			}
 			else {
@@ -277,7 +278,7 @@ public class GameControllerScript : MonoBehaviour {
 			}
 		}
 
-		if(blockCollisionSound && this.optionsPlaySounds) {
+		if(blockCollisionSound && this.options.play_sounds) {
 			audio.clip = collideSound;
 			audio.PlayDelayed(this.moveDuration);
 		}
@@ -285,7 +286,7 @@ public class GameControllerScript : MonoBehaviour {
 		if (numMoves > 0) {
 			this.moveStartTime = Time.time;
 			this.setScore (this.score + scoreChange);
-			if(this.optionsPlaySounds) {
+			if(this.options.play_sounds) {
 				if (axis == "x") audio.PlayOneShot(swipeSoundX);
 				if (axis == "y") audio.PlayOneShot(swipeSoundY);
 				if (axis == "z") audio.PlayOneShot(swipeSoundZ);
@@ -593,10 +594,6 @@ public class GameControllerScript : MonoBehaviour {
 		if (this.gameView == "game") {
 			this.ShowGame();
 		}
-		//OPTIONS GUI
-		if (this.gameView == "options") {
-			this.ShowOptions();
-		}
 		//INSTRUCTIONS GUI
 		if (this.gameView == "instructions") {
 			this.ShowInstructions();
@@ -668,65 +665,6 @@ public class GameControllerScript : MonoBehaviour {
 		}
 	}
 
-	void ShowOptions() {
-		GUI.skin = currentGUISkin;
-		this.mainCamera.transform.eulerAngles = new Vector3 (180, 23, 0);
-		
-		//check to see if any options changed
-		if (previousOptionsUse0 != optionsUse0) {
-			PlayerPrefs.SetInt ("options_use_0", (optionsUse0) ? 1 : 0);
-			previousOptionsUse0 = optionsUse0;
-			GameControllerScript.performRestart = true;
-		}
-
-		
-		if (previousOptionsPlaySounds != optionsPlaySounds) {
-			PlayerPrefs.SetInt ("options_play_sounds", (optionsPlaySounds) ? 1 : 0);
-			previousOptionsPlaySounds = optionsPlaySounds;
-		}
-		
-		//set the label 
-		GUILayout.Label ("Options", "BigLabel");
-
-		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(Screen.width), GUILayout.Height(Mathf.Ceil(Screen.height * .80f)));
-		
-
-			GUILayout.BeginHorizontal ();
-				if (GUILayout.Toggle (optionsUse0, "Use 0s (Note: Changing this will reset the current game!)", currentGUISkin.toggle)) {
-					optionsUse0 = true;		
-				}
-				else {
-					optionsUse0 = false;
-				}
-				GUILayout.Label ( "Use 0s (Note: Changing this will reset the current game!)", "ToggleLabel");
-			GUILayout.EndHorizontal();
-	
-
-			GUILayout.BeginHorizontal ();
-				if (GUILayout.Toggle (this.optionsPlaySounds, "Play Sounds", currentGUISkin.toggle)) {
-					this.optionsPlaySounds = true;		
-				}
-				else {
-					this.optionsPlaySounds = false;
-				}
-				GUILayout.Label ( "Play Sounds", "ToggleLabel");
-			GUILayout.EndHorizontal();
-
-		foreach (Touch touch in Input.touches) {
-				if (touch.phase == TouchPhase.Moved)
-				{
-					// dragging
-					scrollPosition.y += touch.deltaPosition.y;
-				}
-			}
-		GUILayout.EndScrollView();
-
-		if (GUILayout.Button ("Return to Game")) {
-			this.gameView = "game";
-		}
-
-	}
-
 
 	private void sizeGUI() {
 		this.currentGUISkin.GetStyle ("Label").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
@@ -740,41 +678,6 @@ public class GameControllerScript : MonoBehaviour {
 
 		this.currentGUISkin.GetStyle ("Toggle").padding.top = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("Toggle").padding.left = Mathf.CeilToInt(Screen.height * 0.04F);
-	}
-
-	private void InitOptions() {
-		if (!PlayerPrefs.HasKey ("options_use_0")) {
-			PlayerPrefs.SetInt ("options_use_0",1);
-			this.optionsUse0 = true;
-			this.previousOptionsUse0 = true;
-		}
-		else {
-			if(PlayerPrefs.GetInt ("options_use_0") == 1) {
-				this.optionsUse0 = true;
-				this.previousOptionsUse0 = true;
-			}
-			else {
-				this.optionsUse0 = false;
-				this.previousOptionsUse0 = false;
-			}
-		}
-		if (!PlayerPrefs.HasKey ("options_play_sounds")) {
-			PlayerPrefs.SetInt ("options_play_sounds",1);
-			this.optionsPlaySounds = true;
-			this.previousOptionsPlaySounds = true;
-		}
-		else {
-			if(PlayerPrefs.GetInt ("options_play_sounds") == 1) {
-				this.optionsPlaySounds = true;
-				this.previousOptionsUse0 = true;
-			}
-			else {
-				this.optionsPlaySounds = false;
-				this.previousOptionsPlaySounds = false;
-			}
-		}
-		
-		PlayerPrefs.Save();
 	}
 
 	private void saveHistory() {

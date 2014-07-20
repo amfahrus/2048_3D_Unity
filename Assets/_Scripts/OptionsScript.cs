@@ -31,6 +31,17 @@ public class OptionsScript : MonoBehaviour {
 	
 	}
 
+	public string GetOptionsKey() {
+		string optionsKey = "Use Zeros: ";
+		if (this.use_0) {
+			optionsKey = optionsKey + " Yes";
+		}
+		else {
+			optionsKey = optionsKey + " No";
+		}
+
+		return optionsKey;
+	}
 
 	/**
 	 * Set up the options in PlayerPrefs if they do not already exist

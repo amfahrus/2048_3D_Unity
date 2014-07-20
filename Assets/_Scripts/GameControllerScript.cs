@@ -476,7 +476,7 @@ public class GameControllerScript : MonoBehaviour {
 
 	public int GetHighScore()
 	{
-		string key = "highscore-" + PlayerPrefs.GetInt ("options_use_0").ToString();
+		string key = "highscore-" + options.GetOptionsKey();
 		if (PlayerPrefs.HasKey (key)) {
 			return PlayerPrefs.GetInt (key);
 		}
@@ -488,14 +488,14 @@ public class GameControllerScript : MonoBehaviour {
 
 	void SetHighScore(int myHighScore)
 	{
-		string key = "highscore-" + PlayerPrefs.GetInt ("options_use_0").ToString();
+		string key = "highscore-" + options.GetOptionsKey();
 		PlayerPrefs.SetInt( key, myHighScore );
 		PlayerPrefs.Save();
 	}
 
 	public int getHighestBlock()
 	{
-		string key = "highestblock-" + PlayerPrefs.GetInt ("options_use_0").ToString();
+		string key = "highestblock-" + options.GetOptionsKey();
 		if (PlayerPrefs.HasKey (key)) {
 			return PlayerPrefs.GetInt (key);
 		}
@@ -507,7 +507,7 @@ public class GameControllerScript : MonoBehaviour {
 	
 	void SetHighestBlock(int highestBlock)
 	{
-		string key = "highestblock-" + PlayerPrefs.GetInt ("options_use_0").ToString();
+		string key = "highestblock-" + options.GetOptionsKey();
 		PlayerPrefs.SetInt( key, highestBlock );
 		PlayerPrefs.Save();
 	}

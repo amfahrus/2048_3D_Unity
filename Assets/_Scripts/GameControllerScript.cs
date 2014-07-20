@@ -15,7 +15,7 @@ public class GameControllerScript : MonoBehaviour {
 	private float moveStartTime = -1F;
 	public float scale = 3.5F;
 	public bool moving = false;
-	private float moveDuration = 0.2F;
+	private float moveDuration = 0.15F;
 	private float yOffset;
 	private int score;
 	public GUISkin currentGUISkin;
@@ -417,13 +417,15 @@ public class GameControllerScript : MonoBehaviour {
 				}
 			}
 		}
-		bool moved;
-		if (Input.GetKeyUp("right")) moved = this.doMove ("x", 1);
-		if (Input.GetKeyUp("left")) moved = this.doMove ("x", -1);
-		if (Input.GetKeyUp("up")) moved = this.doMove ("y", 1);
-		if (Input.GetKeyUp("down")) moved = this.doMove ("y", -1);
-		if (Input.GetKeyUp("a")) moved = this.doMove ("z", 1);
-		if (Input.GetKeyUp("z")) moved = this.doMove ("z", -1);
+		else {
+			bool moved;
+			if (Input.GetKeyUp("right")) moved = this.doMove ("x", 1);
+			if (Input.GetKeyUp("left")) moved = this.doMove ("x", -1);
+			if (Input.GetKeyUp("up")) moved = this.doMove ("y", 1);
+			if (Input.GetKeyUp("down")) moved = this.doMove ("y", -1);
+			if (Input.GetKeyUp("a")) moved = this.doMove ("z", 1);
+			if (Input.GetKeyUp("z")) moved = this.doMove ("z", -1);
+		}
 
 		if (Input.GetKey(KeyCode.Escape))
 		{

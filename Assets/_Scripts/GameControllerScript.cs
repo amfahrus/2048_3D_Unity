@@ -12,6 +12,10 @@ public class GameControllerScript : MonoBehaviour {
 	public Transform block;
 	public Transform connector;
 	private Transform[,,] blocks = new Transform[3,3,3];
+	private Transform[,,] connectors = new Transform[3,3,3];
+	private int cubeRotationX; //how much the original cube has been rotated around X axis
+	private int cubeRotationY; //how much the original cube has been rotated around Y axis
+	private int cubeRotationZ; //how much the original cube has been rotated around Z axis
 	private float moveStartTime = -1F;
 	public float scale = 3.5F;
 	public bool moving = false;
@@ -21,7 +25,7 @@ public class GameControllerScript : MonoBehaviour {
 	public GUISkin currentGUISkin;
 	public static bool performRestart = false;
 	private bool initialized = false;
-	public string gameView = "game";
+	public string gameView = "menu";
 	public Camera mainCamera;
 	private Vector2 scrollPosition;
 	public Light gameLight;
@@ -29,6 +33,7 @@ public class GameControllerScript : MonoBehaviour {
 	public AudioClip swipeSoundY;
 	public AudioClip swipeSoundZ;
 	public AudioClip collideSound;
+	public float lightIntensity = 0.4f;
 
 	private OptionsScript options;
 //	private bool optionsuse_0;
@@ -92,8 +97,6 @@ public class GameControllerScript : MonoBehaviour {
 					blockScript.x = x;
 					blockScript.y = y;
 					blockScript.z = z;
-					this.setBlockNumber(blockInstance, -1);
-					DontDestroyOnLoad(blockInstance);
 				}
 			}
 		}
@@ -101,14 +104,22 @@ public class GameControllerScript : MonoBehaviour {
 		//instantiate the connectors and position them 
 		for(int i=0; i <=2; i++) {
 			for(int j=0; j<= 2; j++) {
+				//up and down
 				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;
-				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
+				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
+				this.connectors[i,j,0] = connectorInstance;
+
+				//forward and backward
 				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, j * this.scale + this.yOffset, this.scale), Quaternion.identity) as Transform;	
 				connectorInstance.Rotate(new Vector3(90,0,0));
-				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
+				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
+				this.connectors[i,j,1] = connectorInstance;
+
+				//left to right
 				connectorInstance = Instantiate (connector, new Vector3(this.scale, i * this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;	
 				connectorInstance.Rotate(new Vector3(0,0,90));
-				connectorInstance.renderer.material.color = new Color(0,0.4f,0);
+				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
+				this.connectors[i,j,2] = connectorInstance;
 			}
 		}
 
@@ -131,6 +142,35 @@ public class GameControllerScript : MonoBehaviour {
 		BlockScript blockScript; 
 		blockScript = blockInstance.gameObject.GetComponent("BlockScript") as BlockScript;
 		return blockScript.blockNumber;	
+	}
+
+	private int getInitialBlockNumber(int x, int y, int z) {
+
+		if(this.options.board_type == "Hollow Cube") { //hollow cube
+			if(x == 1 && y == 1 && z == 1) {
+				return -2;
+			}
+		}
+
+		if(this.options.board_type == "Box Outline") { //box outline
+			if(x == 1 && y == 1) {
+				return -2;
+			}
+			if(x == 1 && z == 1) {
+				return -2;
+			}
+			if(y ==1 && z == 1) {
+				return -2;
+			}
+		}
+
+		if(this.options.board_type == "Shaft") {
+			if(x == 1 && z == 1) {
+				return -2;
+			}
+		}
+		//return the standard
+		return -1;
 	}
 
 	private List<Transform>  getEmptyBlocks (){
@@ -175,6 +215,45 @@ public class GameControllerScript : MonoBehaviour {
 
 		//no empty blocks to return
 		return false;	
+	}
+
+	private void adjustConnectors() {
+		int j, k, axis;
+		ConnectorScript connectorScript;
+		bool show;
+		for (j = 0; j <= 2; j++) {
+		for (k = 0; k <= 2; k++) {
+		for (axis = 0; axis <= 2; axis++) {
+			connectorScript = this.connectors[j,k,axis].gameObject.GetComponent("ConnectorScript") as ConnectorScript;
+			connectorScript.show = true;
+
+			if (this.options.board_type == "Hollow Cube") {
+				if(j == 1 & k == 1) {
+					connectorScript.show = false;
+				}
+			}
+
+			if (this.options.board_type == "Box Outline") { //Box Outline
+				if(j == 1 || k == 1) {
+					connectorScript.show = false;
+				}
+			}
+					
+			if (this.options.board_type == "Shaft") { //Shaft
+				//remove center connector on the x axis
+				if(axis == 0 && j == 1 & k == 1) {
+					connectorScript.show = false;
+				}
+				//remove 3 center connectors on the y axis
+				if(axis == 1 && j == 1) {
+					connectorScript.show = false;
+				}
+				//remove 3 center connectors on the z axis
+				if(axis == 2 && k == 1) {
+					connectorScript.show = false;
+				}
+			}
+		}}}
 	}
 
 	public bool doMove (string axis, int direction) {
@@ -301,100 +380,111 @@ public class GameControllerScript : MonoBehaviour {
 	//Determine the possible successful combines between 3 blockNumbers (a,b,c) being pushed toward c
 	void calculateRowChanges (int a, int b, int c, ref int scoreChange, ref IDictionary<string, int> newNumbers, ref IDictionary<string, int> shiftBy, ref bool blockCollision ) {
 		blockCollision = false;
-		//figure out if any of the three merges occurred
-		shiftBy ["c"] = 0;
-		if (c > -1 && c == b) {  //b and c merged
-			scoreChange = scoreChange + c*2;
-			blockCollision = true;
-			newNumbers["c"] = c*2;
-			newNumbers["b"] = a;
-			newNumbers["a"] = -1;
-			shiftBy["b"] = 1;
-			if(a > -1) {
-				shiftBy["a"] = 1;
-			}
-			else if (a == -1) {
-				shiftBy["a"] = 0;
-			}
+
+		//first check if we have any -2 values which signify that blocks cant merge along this connector
+		if(a == -2 || b == -2 || c == -2) {
+			newNumbers["a"] = a;
+			newNumbers["b"] = b;
+			newNumbers["c"] = c;
+			shiftBy["a"] = 0;
+			shiftBy["b"] = 0;
+			shiftBy["c"] = 0;
 		}
-		else if (b > -1 && a == b) { //a and b merged
-			scoreChange =  scoreChange + a*2;
-			blockCollision = true;
-			if(c == -1) {
-				newNumbers["c"] = b*2;
-				newNumbers["b"] = -1;
+		else {
+		//figure out if any of the three merges occurred
+			shiftBy ["c"] = 0;
+			if (c > -1 && c == b) {  //b and c merged
+				scoreChange = scoreChange + c*2;
+				blockCollision = true;
+				newNumbers["c"] = c*2;
+				newNumbers["b"] = a;
 				newNumbers["a"] = -1;
 				shiftBy["b"] = 1;
-				shiftBy["a"] = 2;
-			}
-			else {
-				newNumbers["c"] = c;
-				newNumbers["b"] = b*2;
-				newNumbers["a"] = -1;
-				shiftBy["b"] = 0;
-				shiftBy["a"] = 1;
-			}
-		}
-		else if (c > -1 && a == c && b == -1) {  //a and c merged
-			scoreChange =  scoreChange  + c*2;
-			blockCollision = true;
-			newNumbers["c"] = c*2;
-			newNumbers["b"] = -1;
-			newNumbers["a"] = -1;
-			shiftBy["b"] = 0;
-			shiftBy["a"] = 2;
-		} //end of merges block
-		else { //no merges occurred
-			if(c > -1) { //last column has number
-				newNumbers["c"] = c;
-				if(b > -1) { //second column has number
-					newNumbers["b"] = b;
-					newNumbers["a"] = a;
-					shiftBy["b"] = 0;
+				if(a > -1) {
+					shiftBy["a"] = 1;
+				}
+				else if (a == -1) {
 					shiftBy["a"] = 0;
 				}
-				else if(b == -1) {//second column empty
-					newNumbers["b"] = a;
-					newNumbers["a"] = -1;
-					shiftBy["b"] = 0;
-					if (a == -1) {
-						shiftBy["a"] = 0;
-					}
-					else {
-						shiftBy["a"] = 1;
-					}
-				}
-				
-			} //end of block for value in c column
-			else if (c == -1) { //first column empty
-				if(b > -1) { //second column has number
-					newNumbers["c"] = b;
-					newNumbers["b"] = a;
-					newNumbers["a"] = -1;
-					shiftBy["b"] = 1;
-					if(a > -1) {
-						shiftBy["a"] = 1;
-					}
-					else {
-						shiftBy["a"] = 0;
-					}
-					
-				}
-				else if(b == -1) { //second column empty and first column empty
-					newNumbers["c"] = a;
+			}
+			else if (b > -1 && a == b) { //a and b merged
+				scoreChange =  scoreChange + a*2;
+				blockCollision = true;
+				if(c == -1) {
+					newNumbers["c"] = b*2;
 					newNumbers["b"] = -1;
 					newNumbers["a"] = -1;
+					shiftBy["b"] = 1;
+					shiftBy["a"] = 2;
+				}
+				else {
+					newNumbers["c"] = c;
+					newNumbers["b"] = b*2;
+					newNumbers["a"] = -1;
 					shiftBy["b"] = 0;
-					if (a == -1) {
-						shiftBy["a"] = 0;
-					}
-					else {
-						shiftBy["a"] = 2;
-					}
+					shiftBy["a"] = 1;
 				}
 			}
-		} //end of no merges block	
-
+			else if (c > -1 && a == c && b == -1) {  //a and c merged
+				scoreChange =  scoreChange  + c*2;
+				blockCollision = true;
+				newNumbers["c"] = c*2;
+				newNumbers["b"] = -1;
+				newNumbers["a"] = -1;
+				shiftBy["b"] = 0;
+				shiftBy["a"] = 2;
+			} //end of merges block
+			else { //no merges occurred
+				if(c > -1) { //last column has number
+					newNumbers["c"] = c;
+					if(b > -1) { //second column has number
+						newNumbers["b"] = b;
+						newNumbers["a"] = a;
+						shiftBy["b"] = 0;
+						shiftBy["a"] = 0;
+					}
+					else if(b == -1) {//second column empty
+						newNumbers["b"] = a;
+						newNumbers["a"] = -1;
+						shiftBy["b"] = 0;
+						if (a == -1) {
+							shiftBy["a"] = 0;
+						}
+						else {
+							shiftBy["a"] = 1;
+						}
+					}
+					
+				} //end of block for value in c column
+				else if (c == -1) { //first column empty
+					if(b > -1) { //second column has number
+						newNumbers["c"] = b;
+						newNumbers["b"] = a;
+						newNumbers["a"] = -1;
+						shiftBy["b"] = 1;
+						if(a > -1) {
+							shiftBy["a"] = 1;
+						}
+						else {
+							shiftBy["a"] = 0;
+						}
+						
+					}
+					else if(b == -1) { //second column empty and first column empty
+						newNumbers["c"] = a;
+						newNumbers["b"] = -1;
+						newNumbers["a"] = -1;
+						shiftBy["b"] = 0;
+						if (a == -1) {
+							shiftBy["a"] = 0;
+						}
+						else {
+							shiftBy["a"] = 2;
+						}
+					}
+				}
+			} //end of no merges block	
+		} //end of check for -2;
 	}
 
 
@@ -426,7 +516,7 @@ public class GameControllerScript : MonoBehaviour {
 			if (Input.GetKeyUp("a")) moved = this.doMove ("z", 1);
 			if (Input.GetKeyUp("z")) moved = this.doMove ("z", -1);
 		}
-
+		this.adjustConnectors ();
 		if (Input.GetKey(KeyCode.Escape))
 		{
 			Application.Quit();
@@ -449,22 +539,28 @@ public class GameControllerScript : MonoBehaviour {
 	public void restart() {
 		int[,,] positions = new int[3, 3, 3];
 		int x=0, y=0, z=0, newNumber=0;
-		this.gameLight.intensity = 4;
+		this.gameLight.intensity = this.lightIntensity;
 
 		for (x = 0; x <= 2; x++) {
 			for (y = 0; y <= 2; y++) {
 				for (z = 0; z <= 2; z++) {
-					this.setBlockNumber(this.blocks[x,y,z], -1);
+					this.setBlockNumber(this.blocks[x,y,z], this.getInitialBlockNumber(x,y,z));
 					positions[x,y,z] = -1;
 				}
 			}
 		}
+
+		this.adjustConnectors ();
+
 		PlayerPrefs.SetString ("redo_moves2","");
 		PlayerPrefs.SetString ("redo_moves1","");
 		PlayerPrefs.SetString ("redo_moves0","");
 		PlayerPrefs.SetInt ("redos", 2);
 		PlayerPrefs.SetString ("game_status", "playing");
 		PlayerPrefs.SetInt ("game_highest_block", 0);
+		PlayerPrefs.SetInt ("cube_rotation_x", 0);
+		PlayerPrefs.SetInt ("cube_rotation_y", 0);
+		PlayerPrefs.SetInt ("cube_rotation_z", 0);
 		PlayerPrefs.Save ();
 
 		this.fillRandomBlock(ref x, ref y, ref z, ref newNumber);
@@ -605,7 +701,7 @@ public class GameControllerScript : MonoBehaviour {
 	void ShowInstructions() {
 		GUI.skin = currentGUISkin;
 		
-		this.mainCamera.transform.eulerAngles = new Vector3 (180, 23, 0);
+		this.mainCamera.transform.eulerAngles = new Vector3 (120, 23, 0);
 
 		GUIStyle labelStyle = new GUIStyle();
 		GUILayout.Label ("Instructions", "BigLabel");
@@ -622,15 +718,15 @@ public class GameControllerScript : MonoBehaviour {
 		}
 		GUILayout.EndScrollView();
 
-		if (GUILayout.Button ("Return to Game")) {
-			this.gameView = "game";
+		if (GUILayout.Button ("Return to Menu")) {
+			this.gameView = "menu";
 		}
 	}
 
 	void ShowGame() {
 		GUI.skin = currentGUISkin;
-		this.gameLight.intensity = 4;
-		this.mainCamera.transform.eulerAngles = new Vector3 (19F, 29.5F, 0);
+		this.gameLight.intensity = this.lightIntensity;
+		this.mainCamera.transform.eulerAngles = new Vector3 (16F, 29.5F, 0);
 
 		if (PlayerPrefs.GetString ("game_status") == "game_over") {
 			GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
@@ -651,18 +747,15 @@ public class GameControllerScript : MonoBehaviour {
 
 		
 		GUIStyle style = currentGUISkin.GetStyle ("button");
-		style.fontSize = 14;
+		//style.fontSize = 14;
 
-		if (GUI.Button(new Rect(1, Screen.height * 0.12F, Screen.width * 0.30F, Screen.height * 0.06F),"Options")) {
-			this.gameView = "options";
+		if (GUI.Button(new Rect(1, Screen.height * 0.12F, Screen.width * 0.30F, Screen.height * 0.06F),"Menu")) {
+			this.gameView = "menu";
 		}
-		if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.12F, Screen.width * 0.33F, Screen.height * 0.06F),"Instructions")) {
-			this.gameView = "instructions";
-		}
-		if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .30f, Screen.height * 0.06F), "Restart")) {
+		if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.12F, Screen.width * 0.33F, Screen.height * 0.06F),"Restart")) {
 			this.restart();
 		}
-		if (GUI.Button(new Rect(Screen.width * .05f, Screen.height * 0.90F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
+		if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
 			this.undo();
 		}
 	}
@@ -671,8 +764,10 @@ public class GameControllerScript : MonoBehaviour {
 	private void sizeGUI() {
 		this.currentGUISkin.GetStyle ("Label").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("Button").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
+		this.currentGUISkin.GetStyle ("OptionSubheader").fontSize = Mathf.CeilToInt(Screen.height * 0.05F);
 		this.currentGUISkin.GetStyle ("Toggle").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("ToggleLabel").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
+		this.currentGUISkin.GetStyle ("ToggleLabelWarning").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 
 		this.currentGUISkin.GetStyle ("SmallLabel").fontSize = Mathf.CeilToInt(Screen.height * 0.03F);
 		
@@ -751,7 +846,9 @@ public class GameControllerScript : MonoBehaviour {
 				}
 			}
 		}
-
+		
+		
+		this.adjustConnectors ();
 		this.setScore (PlayerPrefs.GetInt ("score"));
 	}
 }

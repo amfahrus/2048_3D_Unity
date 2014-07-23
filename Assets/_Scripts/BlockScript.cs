@@ -30,12 +30,9 @@ public class BlockScript : MonoBehaviour {
 			if (percentComplete >= 1F) {
 				this.moveStartTime = -1F;
 				this.setBlockNumber(this.moveNewBlockNumber);
-				if(this.blockNumber > -1) {
-					transform.position = this.originalPosition;
-				}
+				transform.position = this.originalPosition;
 			}
 		}
-
 
 	}
 
@@ -59,39 +56,70 @@ public class BlockScript : MonoBehaviour {
 		this.blockNumber = blockNumber;
 		TextMesh textMesh = this.GetComponentInChildren<TextMesh>();
 		Material blockTextMaterial = gameObject.transform.Find ("BlockText").gameObject.renderer.material;
-		if (blockNumber == -1 ) {
-			textMesh.color = new Color(1, 1, 1);
+		MeshRenderer cube = gameObject.GetComponentInChildren<MeshRenderer>();
+		Color cubeColor = cube.renderer.material.color;
+
+		//block doesn't exits
+		if(blockNumber == -2) {
+			cube.renderer.enabled = false;
 			textMesh.text = "";
-			transform.position = new Vector3(0,0,100);
 		}
+		//block is empty
+		else if (blockNumber == -1 ) {
+			cube.renderer.enabled = false;
+			cube.renderer.material.color = new Color(1, 1, 1, 0.2f);
+			textMesh.text = "";
+		}
+		//block has a value
 		else {
-			blockTextMaterial.SetColor ("_Color", new Color(0.1f,0.1f,1));
+			cube.renderer.enabled = true;
+			cube.material.color = this.getColor (blockNumber);
+			blockTextMaterial.SetColor ("_Color", new Color(1,1,1));
 			if(blockNumber == 0) blockTextMaterial.SetColor ("_Color", new Color(0.8f,0.8f,1));
 			textMesh.text = blockNumber.ToString();
 			transform.position = this.originalPosition;
 		}
-		MeshRenderer cube = gameObject.GetComponentInChildren<MeshRenderer>();
-		cube.material.color = this.getColor (blockNumber);
+
 	}
 
 	private Color getColor(int num) {
-		
+		if (num == -2) return HexToColor ("000000");
 		if (num == 0) return HexToColor ("000055");
-		if (num == 2) return HexToColor ("ccccff");
-		if (num == 4) return HexToColor ("99ffff");
-		if (num == 8) return HexToColor ("66ffb2");
-		if (num == 16) return HexToColor ("33ff33");
-		if (num == 32) return HexToColor ("99ff33");
-		if (num == 64) return HexToColor ("ffff00");
-		if (num == 128) return HexToColor ("ffcc99");
+		if (num == 2) return HexToColor ("3333cc");
+		if (num == 4) return HexToColor ("0099aa");
+		if (num == 8) return HexToColor ("00ff99");
+		if (num == 16) return HexToColor ("00ff00");
+		if (num == 32) return HexToColor ("99ff00");
+		if (num == 64) return HexToColor ("bbff55");
+		if (num == 128) return HexToColor ("ffff00");
 		if (num == 256) return HexToColor ("ff9933");
-		if (num == 512) return HexToColor ("ff6666");
-		if (num == 1024) return HexToColor ("ff0000");
-		if (num == 2048) return HexToColor ("ff66b2");
-		if (num == 4096) return HexToColor ("b266ff");
-		if (num == 8192) return HexToColor ("9999ff");
-		if (num == 16284) return HexToColor ("ffffff");
+		if (num == 512) return HexToColor ("ff6600");
+		if (num == 1024) return HexToColor ("ff5050");
+		if (num == 2048) return HexToColor ("ff0000");
+		if (num == 4096) return HexToColor ("cc0066");
+		if (num == 8192) return HexToColor ("990099");
+		if (num == 16284) return HexToColor ("9999ff");
+		if (num == 32568) return HexToColor ("ffffff");
 		return new Color (0.5f, 0.5f, 0.5f);
+
+		
+//		if (num == 0) return HexToColor ("000055");
+//		if (num == 2) return HexToColor ("3333cc");
+//		if (num == 4) return HexToColor ("006666");
+//		if (num == 8) return HexToColor ("00cc33");
+//		if (num == 16) return HexToColor ("00cc00");
+//		if (num == 32) return HexToColor ("66cc00");
+//		if (num == 64) return HexToColor ("cccc00");
+//		if (num == 128) return HexToColor ("cc9966");
+//		if (num == 256) return HexToColor ("cc6600");
+//		if (num == 512) return HexToColor ("ff6666");
+//		if (num == 1024) return HexToColor ("ff0000");
+//		if (num == 2048) return HexToColor ("ff66b2");
+//		if (num == 4096) return HexToColor ("b266ff");
+//		if (num == 8192) return HexToColor ("9999ff");
+//		if (num == 16284) return HexToColor ("ffffff");
+//		return new Color (0.5f, 0.5f, 0.5f);
+//
 
 	}
 

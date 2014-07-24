@@ -164,7 +164,7 @@ public class GameControllerScript : MonoBehaviour {
 			}
 		}
 
-		if(this.options.board_type == "Shaft") {
+		if(this.options.board_type == "Four Walls") {
 			if(x == 1 && z == 1) {
 				return -2;
 			}
@@ -239,7 +239,7 @@ public class GameControllerScript : MonoBehaviour {
 				}
 			}
 					
-			if (this.options.board_type == "Shaft") { //Shaft
+			if (this.options.board_type == "Four Walls") { 
 				//remove center connector on the x axis
 				if(axis == 0 && j == 1 & k == 1) {
 					connectorScript.show = false;

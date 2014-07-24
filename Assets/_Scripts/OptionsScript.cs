@@ -10,7 +10,7 @@ public class OptionsScript : MonoBehaviour {
 
 	public bool use_0;    //whether or not to use 0 blocks in the game
 	public bool play_sounds; //whether or not to play sounds
-	public string board_type; //which type of board using: Solid Cube, Hollow Cube, Shaft, Box Outline
+	public string board_type; //which type of board using: Solid Cube, Hollow Cube, Four Walls, Box Outline
 
 	//previous values for detecting change
 	private bool previous_use_0;
@@ -187,10 +187,10 @@ public class OptionsScript : MonoBehaviour {
 
 			
 			GUILayout.BeginHorizontal ();
-			if (GUILayout.Toggle (this.board_type == "Shaft", "Shaft", currentGUISkin.toggle)) {
-				this.board_type = "Shaft";
+			if (GUILayout.Toggle (this.board_type == "Four Walls", "Four Walls", currentGUISkin.toggle)) {
+				this.board_type = "Four Walls";
 			}
-			GUILayout.Label ( "Shaft (24 Blocks)", "ToggleLabelWarning");
+			GUILayout.Label ( "Four Walls (24 Blocks)", "ToggleLabelWarning");
 			GUILayout.EndHorizontal();
 
 			

@@ -82,7 +82,7 @@ public class GameControllerScript : MonoBehaviour {
 		Transform connectorInstance;
 		TextMesh textMesh;
 
-		
+		this.gameView = "menu";
 		this.options = this.gameObject.GetComponent ("OptionsScript") as OptionsScript;
 		this.sizeGUI();
 

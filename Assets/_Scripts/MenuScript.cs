@@ -38,24 +38,26 @@ public class MenuScript : MonoBehaviour {
 			GUIStyle titleLabelStyle = new GUIStyle(currentGUISkin.GetStyle("TitleLabel"));
 			titleLabelStyle.fontSize = Mathf.CeilToInt(Screen.height * 0.13F);
 
-			GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "2048 3D!", titleLabelStyle);
+			GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "2048 - 3D", titleLabelStyle);
 
-		
+			
+			GUI.Label (new Rect (0, Screen.height * 0.15F, Screen.width, Screen.height * 0.06F), "by J. Reuben Wetherbee");
 
 
+			if (GUI.Button(new Rect(Screen.width * 0.20f, Screen.height * 0.25f, Screen.width * 0.60F, Screen.height * 0.10F),"Options", menuButtonStyle)) {
+				this.gameScript.gameView = "options";
+			}
+			if (GUI.Button(new Rect(Screen.width * 0.20f, Screen.height * 0.40f, Screen.width * 0.60F, Screen.height * 0.10F),"Instructions", menuButtonStyle)) {
+				this.gameScript.gameView = "instructions";
+			}
+			if (GUI.Button(new Rect(Screen.width * 0.20f, Screen.height * 0.55F, Screen.width * 0.60F, Screen.height * 0.10F),"Exit", menuButtonStyle)) {
+				Application.Quit();
+			}
 
-			if (GUI.Button(new Rect(Screen.width * .20f, Screen.height * 0.24F, Screen.width * 0.60F, Screen.height * 0.15F),"Play!",playButtonStyle)) {
+			if (GUI.Button(new Rect(Screen.width * .20f, Screen.height * 0.70F, Screen.width * 0.60F, Screen.height * 0.15F),"Play!",playButtonStyle)) {
 				this.gameScript.gameView = "game";
 			}
 
-			if (GUI.Button(new Rect(Screen.width * 0.20f, Screen.height * 0.45F, Screen.width * 0.60F, Screen.height * 0.10F),"Options", menuButtonStyle)) {
-				this.gameScript.gameView = "options";
-			}
-			if (GUI.Button(new Rect(Screen.width * 0.20f, Screen.height * 0.60F, Screen.width * 0.60F, Screen.height * 0.10F),"Instructions", menuButtonStyle)) {
-				this.gameScript.gameView = "instructions";
-			}
-
-			GUI.Label (new Rect (0, Screen.height * 0.75F, Screen.width, Screen.height * 0.06F), "by J. Reuben Wetherbee");
 		}
 	}
 }

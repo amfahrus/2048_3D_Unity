@@ -200,6 +200,16 @@ public class OptionsScript : MonoBehaviour {
 			}
 			GUILayout.Label ( "Cube Outline (20 Blocks)", "ToggleLabelWarning");
 			GUILayout.EndHorizontal();
+
+			
+			
+			GUILayout.BeginHorizontal ();
+			if (GUILayout.Toggle (this.board_type == "No Corners", "No Corners", currentGUISkin.toggle)) {
+				this.board_type = "No Corners";
+			}
+			GUILayout.Label ( "No Corners (19 Blocks)", "ToggleLabelWarning");
+			GUILayout.EndHorizontal();
+
 			
 			GUILayout.Label ("Other Options", "OptionSubheader");
 

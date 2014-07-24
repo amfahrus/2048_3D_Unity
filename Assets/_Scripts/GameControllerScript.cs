@@ -169,6 +169,17 @@ public class GameControllerScript : MonoBehaviour {
 				return -2;
 			}
 		}
+
+		
+		if(this.options.board_type == "No Corners") {
+			if(x == 1 || y == 1 || z == 1) {
+				return -1;
+			}
+			else {
+				return -2;
+			}
+		}
+
 		//return the standard
 		return -1;
 	}
@@ -250,6 +261,13 @@ public class GameControllerScript : MonoBehaviour {
 				}
 				//remove 3 center connectors on the z axis
 				if(axis == 2 && k == 1) {
+					connectorScript.show = false;
+				}
+			}
+
+			
+			if (this.options.board_type == "No Corners") { 
+				if(j != 1 && k != 1) {
 					connectorScript.show = false;
 				}
 			}
@@ -804,7 +822,10 @@ public class GameControllerScript : MonoBehaviour {
 		int myNum = 0;
 		char[] separator = {','};
 
-		if( PlayerPrefs.GetString ("redo_moves1") != "" && PlayerPrefs.GetInt ("redos") > 0) {
+		if( PlayerPrefs.GetString ("game_status") != "game_over"
+		   && PlayerPrefs.GetString ("redo_moves1") != ""
+		   && PlayerPrefs.GetInt ("redos") > 0
+		) {
 			positions = PlayerPrefs.GetString ("redo_moves1").Split (separator);
 			//loop through and set the block numbers for each block
 			for (int x = 0; x <= 2; x++) {

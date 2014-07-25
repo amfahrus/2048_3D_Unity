@@ -42,12 +42,19 @@ public class OptionsScript : MonoBehaviour {
 
 		optionsKey += " / Use Zeros: ";
 		if (this.use_0) {
-			optionsKey = optionsKey + " Yes";
+			optionsKey += "Yes";
 		}
 		else {
-			optionsKey = optionsKey + " No";
+			optionsKey += "No";
 		}
 
+		optionsKey += " / Timer: ";
+		if (this.timer_duration == 0) {
+			optionsKey += "none";
+		}
+		else {
+			optionsKey += this.timer_duration.ToString () + " seconds";
+		}
 
 		return optionsKey;
 	}

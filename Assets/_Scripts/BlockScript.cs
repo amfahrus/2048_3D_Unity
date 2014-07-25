@@ -102,24 +102,6 @@ public class BlockScript : MonoBehaviour {
 		if (num == 32568) return HexToColor ("ffffff");
 		return new Color (0.5f, 0.5f, 0.5f);
 
-		
-//		if (num == 0) return HexToColor ("000055");
-//		if (num == 2) return HexToColor ("3333cc");
-//		if (num == 4) return HexToColor ("006666");
-//		if (num == 8) return HexToColor ("00cc33");
-//		if (num == 16) return HexToColor ("00cc00");
-//		if (num == 32) return HexToColor ("66cc00");
-//		if (num == 64) return HexToColor ("cccc00");
-//		if (num == 128) return HexToColor ("cc9966");
-//		if (num == 256) return HexToColor ("cc6600");
-//		if (num == 512) return HexToColor ("ff6666");
-//		if (num == 1024) return HexToColor ("ff0000");
-//		if (num == 2048) return HexToColor ("ff66b2");
-//		if (num == 4096) return HexToColor ("b266ff");
-//		if (num == 8192) return HexToColor ("9999ff");
-//		if (num == 16284) return HexToColor ("ffffff");
-//		return new Color (0.5f, 0.5f, 0.5f);
-//
 
 	}
 

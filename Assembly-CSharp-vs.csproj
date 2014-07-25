@@ -53,6 +53,7 @@
      <Compile Include="Assets\_Scripts\MoveControlScript.cs" />
      <Compile Include="Assets\_Scripts\OptionsScript.cs" />
      <Compile Include="Assets\_Scripts\SwipeListenerScript.cs" />
+     <Compile Include="Assets\_Scripts\TimerScript.cs" />
      <None Include="Assets\Materials\3DText.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

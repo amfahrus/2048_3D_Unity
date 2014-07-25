@@ -29,17 +29,20 @@ public class GameControllerScript : MonoBehaviour {
 	public Camera mainCamera;
 	private Vector2 scrollPosition;
 	public Light gameLight;
+
+	//sounds and audio source setup
 	public AudioClip swipeSoundX;
 	public AudioClip swipeSoundY;
 	public AudioClip swipeSoundZ;
 	public AudioClip collideSound;
+	private AudioSource swipeAudioSource;
+	private AudioSource collideAudioSource;
+
+	//default light intensity
 	public float lightIntensity = 0.4f;
 
 	private OptionsScript options;
-//	private bool optionsuse_0;
-//	private bool previousOptionsuse_0;
-//	private bool optionsPlaySounds;
-//	private bool previousOptionsPlaySounds;
+	private TimerScript timer;
 
 	//instruction text
 	private string instructionText = @"The object of 2048-3D is to"
@@ -84,7 +87,15 @@ public class GameControllerScript : MonoBehaviour {
 
 		this.gameView = "menu";
 		this.options = this.gameObject.GetComponent ("OptionsScript") as OptionsScript;
+		this.timer = this.gameObject.GetComponent ("TimerScript") as TimerScript;
 		this.sizeGUI();
+
+		//setup audio sources
+		
+		AudioSource[] audioSources = GetComponents<AudioSource>();
+		this.swipeAudioSource = audioSources[0];
+		this.collideAudioSource = audioSources[1];
+		this.collideAudioSource.clip = this.collideSound;
 
 		//instantiate the blocks and position them
 		for (x = 0; x <= 2; x++) {
@@ -285,9 +296,9 @@ public class GameControllerScript : MonoBehaviour {
 		IDictionary<string, int> newNumbers = new Dictionary<string, int>(); //new numbers for blocks a,b & c to have
 		IDictionary<string, int> shiftBy = new Dictionary<string, int>(); //distance for blocks a,b & c to shift
 		int[,,] numbersAfterMove = new int[3,3,3];
-
-		if (PlayerPrefs.GetString ("game_status") != "playing")
-						return false;
+;
+		if (PlayerPrefs.GetString ("game_status") != "playing") return false;
+		if (this.gameView != "game")  return false;
 
 		//loop through each of the 9 rows to be calculated 
 		for(loop1 = 0; loop1 <=2; loop1++) {
@@ -352,6 +363,7 @@ public class GameControllerScript : MonoBehaviour {
 					PlayerPrefs.SetInt ("game_highest_block", newHighestBlock);
 					if (newHighestBlock == 2048) PlayerPrefs.SetString("game_status","game_won");
 					PlayerPrefs.Save ();
+					this.timer.SetNextBlockTarget(newHighestBlock);
 					if (newHighestBlock > this.getHighestBlock()) this.SetHighestBlock(newHighestBlock);
 				}
 
@@ -376,17 +388,16 @@ public class GameControllerScript : MonoBehaviour {
 		}
 
 		if(blockCollisionSound && this.options.play_sounds) {
-			audio.clip = collideSound;
-			audio.PlayDelayed(this.moveDuration);
+			this.collideAudioSource.PlayDelayed(this.moveDuration);
 		}
 
 		if (numMoves > 0) {
 			this.moveStartTime = Time.time;
 			this.setScore (this.score + scoreChange);
 			if(this.options.play_sounds) {
-				if (axis == "x") audio.PlayOneShot(swipeSoundX);
-				if (axis == "y") audio.PlayOneShot(swipeSoundY);
-				if (axis == "z") audio.PlayOneShot(swipeSoundZ);
+				if (axis == "x") this.swipeAudioSource.PlayOneShot(swipeSoundX);
+				if (axis == "y") this.swipeAudioSource.PlayOneShot(swipeSoundY);
+				if (axis == "z") this.swipeAudioSource.PlayOneShot(swipeSoundZ);
 			}
 			return true;
 		}
@@ -588,6 +599,9 @@ public class GameControllerScript : MonoBehaviour {
 		this.saveHistory();
 
 		this.setScore (0);
+		
+		TimerScript timerScript = this.gameObject.GetComponent ("TimerScript") as TimerScript;
+		timerScript.ResetTimer();
 	}
 
 	public int GetHighScore()
@@ -871,6 +885,7 @@ public class GameControllerScript : MonoBehaviour {
 		
 		this.adjustConnectors ();
 		this.setScore (PlayerPrefs.GetInt ("score"));
+
 	}
 }
 

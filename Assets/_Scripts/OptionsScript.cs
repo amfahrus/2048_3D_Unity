@@ -64,9 +64,9 @@ public class OptionsScript : MonoBehaviour {
 	 */
 
 	private void InitOptions() {
-		this.initOption ("use_0", true);
+		this.initOption ("use_0", false);
 		this.initOption ("play_sounds", true);
-		this.initOption ("board_type", "Solid Cube");
+		this.initOption ("board_type", "No Corners");
 		this.initOption ("timer_duration", 0);
 	}
 	//Boolean init option
@@ -215,7 +215,7 @@ public class OptionsScript : MonoBehaviour {
 			
 			GUILayout.Label ("WARNING! Changing any of the following options will cause the game to reset!", "ToggleLabelWarning");
 
-			GUILayout.Label ("Game Board Type", "OptionSubheader");
+			GUILayout.Label ("Game Board Type", "Subheader");
 			//Game Board Type
 			GUILayout.BeginHorizontal ();
 			if (GUILayout.Toggle (this.board_type == "Solid Cube", "Solid Cube", currentGUISkin.toggle)) {
@@ -259,7 +259,7 @@ public class OptionsScript : MonoBehaviour {
 
 
 			//TIMER OPTIONS ####################################################
-			GUILayout.Label ("Timer Options", "OptionSubheader");
+			GUILayout.Label ("Timer Options", "Subheader");
 
 			foreach (int i in this.GetTimerDurationTimes())
 			{
@@ -275,7 +275,7 @@ public class OptionsScript : MonoBehaviour {
 
 			
 			//Other OPTIONS ####################################################
-			GUILayout.Label ("Other Options", "OptionSubheader");
+			GUILayout.Label ("Block Generation Options", "Subheader");
 
 			//Use Zeros
 			GUILayout.BeginHorizontal ();
@@ -322,7 +322,7 @@ public class OptionsScript : MonoBehaviour {
 			return "Ridiculous Speed (20 Sec)";
 		}
 		if (timerDuration == 15) {
-			return "Ludiculous Speed (15 Sec)";
+			return "Ludicrous Speed (15 Sec)";
 		}
 		return "Unknown Speed";
 	}

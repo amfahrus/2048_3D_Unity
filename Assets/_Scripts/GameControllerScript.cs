@@ -19,7 +19,7 @@ public class GameControllerScript : MonoBehaviour {
 	private float moveStartTime = -1F;
 	public float scale = 3.5F;
 	public bool moving = false;
-	private float moveDuration = 0.15F;
+	private float moveDuration = 0.10F;
 	private float yOffset;
 	private int score;
 	public GUISkin currentGUISkin;
@@ -545,7 +545,7 @@ public class GameControllerScript : MonoBehaviour {
 			if (Input.GetKeyUp("a")) moved = this.doMove ("z", 1);
 			if (Input.GetKeyUp("z")) moved = this.doMove ("z", -1);
 		}
-		this.adjustConnectors ();
+		this.adjustConnectors();
 		if (Input.GetKey(KeyCode.Escape))
 		{
 			Application.Quit();
@@ -722,81 +722,47 @@ public class GameControllerScript : MonoBehaviour {
 	void OnGUI() {
 		//GAME GUI
 		if (this.gameView == "game") {
-			this.ShowGame();
-		}
-		//INSTRUCTIONS GUI
-		if (this.gameView == "instructions") {
-			this.ShowInstructions();
-		}
-	}
-
-	void ShowInstructions() {
-		GUI.skin = currentGUISkin;
-		
-		this.mainCamera.transform.eulerAngles = new Vector3 (120, 23, 0);
-
-		GUIStyle labelStyle = new GUIStyle();
-		GUILayout.Label ("Instructions", "BigLabel");
-		
-		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(Screen.width), GUILayout.Height(Mathf.Ceil(Screen.height * .80f)));
-		GUILayout.Label(this.instructionText);
-		
-		foreach (Touch touch in Input.touches) {
-			if (touch.phase == TouchPhase.Moved)
-			{
-				// dragging
-				scrollPosition.y += touch.deltaPosition.y;
+			GUI.skin = currentGUISkin;
+			this.gameLight.intensity = this.lightIntensity;
+			this.mainCamera.transform.eulerAngles = new Vector3 (16F, 29.5F, 0);
+			
+			if (PlayerPrefs.GetString ("game_status") == "game_over") {
+				GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
+				this.gameLight.intensity = 0;
+			}
+			if (PlayerPrefs.GetString ("game_status") == "game_won") {
+				GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "You Won!", "BigLabel");
+				if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.4F, Screen.width * 0.30F, Screen.height * 0.06F),"Continue")) {
+					PlayerPrefs.SetString ("game_status", "playing");
+					PlayerPrefs.Save ();
+				}
+				this.gameLight.intensity = 0;
+			}
+			
+			GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "Score: " + this.score.ToString (), "BigLabel");
+			string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + " / " + this.getHighestBlock ().ToString ();
+			GUI.Label (new Rect (0, Screen.height * 0.06F, Screen.width, Screen.height / 10), highScoreText, "SmallLabel");
+			
+			
+			GUIStyle style = currentGUISkin.GetStyle ("button");
+			//style.fontSize = 14;
+			
+			if (GUI.Button(new Rect(1, Screen.height * 0.12F, Screen.width * 0.30F, Screen.height * 0.06F),"Menu")) {
+				this.gameView = "menu";
+			}
+			if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.12F, Screen.width * 0.33F, Screen.height * 0.06F),"Restart")) {
+				this.restart();
+			}
+			if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
+				this.undo();
 			}
 		}
-		GUILayout.EndScrollView();
-
-		if (GUILayout.Button ("Return to Menu")) {
-			this.gameView = "menu";
-		}
 	}
-
-	void ShowGame() {
-		GUI.skin = currentGUISkin;
-		this.gameLight.intensity = this.lightIntensity;
-		this.mainCamera.transform.eulerAngles = new Vector3 (16F, 29.5F, 0);
-
-		if (PlayerPrefs.GetString ("game_status") == "game_over") {
-			GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
-			this.gameLight.intensity = 0;
-		}
-		if (PlayerPrefs.GetString ("game_status") == "game_won") {
-			GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "You Won!", "BigLabel");
-			if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.4F, Screen.width * 0.30F, Screen.height * 0.06F),"Continue")) {
-				PlayerPrefs.SetString ("game_status", "playing");
-				PlayerPrefs.Save ();
-			}
-			this.gameLight.intensity = 0;
-		}
-		
-		GUI.Label (new Rect (0, 0, Screen.width, Screen.height * 0.06F), "Score: " + this.score.ToString (), "BigLabel");
-		string highScoreText = "High Score/Block: " + this.GetHighScore ().ToString () + " / " + this.getHighestBlock ().ToString ();
-		GUI.Label (new Rect (0, Screen.height * 0.06F, Screen.width, Screen.height / 10), highScoreText, "SmallLabel");
-
-		
-		GUIStyle style = currentGUISkin.GetStyle ("button");
-		//style.fontSize = 14;
-
-		if (GUI.Button(new Rect(1, Screen.height * 0.12F, Screen.width * 0.30F, Screen.height * 0.06F),"Menu")) {
-			this.gameView = "menu";
-		}
-		if (GUI.Button(new Rect(Screen.width * .33f, Screen.height * 0.12F, Screen.width * 0.33F, Screen.height * 0.06F),"Restart")) {
-			this.restart();
-		}
-		if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
-			this.undo();
-		}
-	}
-
 
 	private void sizeGUI() {
 		this.currentGUISkin.GetStyle ("Label").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("Button").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
-		this.currentGUISkin.GetStyle ("OptionSubheader").fontSize = Mathf.CeilToInt(Screen.height * 0.05F);
+		this.currentGUISkin.GetStyle ("Subheader").fontSize = Mathf.CeilToInt(Screen.height * 0.05F);
 		this.currentGUISkin.GetStyle ("Toggle").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("ToggleLabel").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);
 		this.currentGUISkin.GetStyle ("ToggleLabelWarning").fontSize = Mathf.CeilToInt(Screen.height * 0.04F);

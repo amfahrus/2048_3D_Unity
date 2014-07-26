@@ -49,6 +49,7 @@
      <Compile Include="Assets\_Scripts\BlockScript.cs" />
      <Compile Include="Assets\_Scripts\ConnectorScript.cs" />
      <Compile Include="Assets\_Scripts\GameControllerScript.cs" />
+     <Compile Include="Assets\_Scripts\InstructionsScript.cs" />
      <Compile Include="Assets\_Scripts\MenuScript.cs" />
      <Compile Include="Assets\_Scripts\MoveControlScript.cs" />
      <Compile Include="Assets\_Scripts\OptionsScript.cs" />

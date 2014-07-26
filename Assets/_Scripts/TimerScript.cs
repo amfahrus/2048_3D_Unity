@@ -74,7 +74,7 @@ public class TimerScript : MonoBehaviour {
 
 	public void ResetTimer() {
 		this.InitTimer ();
-		this.timeRemaining = PlayerPrefs.GetInt ("options_timer_duration");
+		this.timeRemaining = PlayerPrefs.GetInt ("options_timer_duration") + 5;
 		PlayerPrefs.SetInt ("timer_time_remaining", this.timeRemaining);
 		PlayerPrefs.Save();
 	}

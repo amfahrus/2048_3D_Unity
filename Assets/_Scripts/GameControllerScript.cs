@@ -44,36 +44,6 @@ public class GameControllerScript : MonoBehaviour {
 	private OptionsScript options;
 	private TimerScript timer;
 
-	//instruction text
-	private string instructionText = @"The object of 2048-3D is to"
-		+ " slide all the blocks in such a way"
-			+ " that blocks with the same numbers collide"
-			+ " forming a new block that is twice"
-			+ " as much as the originals until"
-			+ " the number 2048 is reached.\n\n"
-			
-			+ "To slide the blocks simply swipe up,"
-			+ " down, left or right (keyboard: arrow keys). To move the"
-			+ " blocks forward and backward use the" 
-			+ " big red arrow keys at the bottom of the screen (keyboard: a and z keys).  " 
-			+ " When moving, all blocks that can slide in the chosen direction will move"
-			+ " simultaneously, and any blocks moving toward a block with the same number will collide. "
-			+ " Two blocks with the number 0 will collide but never"
-			+ " increase higher than 0. You can turn"
-			+ " off 0s in the game options tab.\n\n"
-
-			+ "For every collision you receive"
-			+ " the number of points of the newly"
-			+ " created block. After each move is"
-			+ " made a new number (either 0, 2 or 4)"
-			+ " will be randomly assigned to an"
-			+ " empty slot.  If after making a move"
-			+ " all blocks are filled and no new"
-			+ " moves are possible, the game ends. \n\n"
-
-			+ "2048-3D is based upon the original"
-			+ " 2048 game designed by Gabriele Cirulli.\n\n" 
-			+ "Soud effects by freeSFX http://www.freesfx.co.uk";
 	void  Start (){
 
 		int x; 
@@ -89,6 +59,8 @@ public class GameControllerScript : MonoBehaviour {
 		this.options = this.gameObject.GetComponent ("OptionsScript") as OptionsScript;
 		this.timer = this.gameObject.GetComponent ("TimerScript") as TimerScript;
 		this.sizeGUI();
+		
+		this.options.InitOptions();
 
 		//setup audio sources
 		
@@ -157,9 +129,16 @@ public class GameControllerScript : MonoBehaviour {
 
 	private int getInitialBlockNumber(int x, int y, int z) {
 
+		if(this.options.board_type == "Solid Cube") {
+			return -1;
+		}
+
 		if(this.options.board_type == "Hollow Cube") { //hollow cube
 			if(x == 1 && y == 1 && z == 1) {
 				return -2;
+			}
+			else {
+				return -1;
 			}
 		}
 
@@ -173,26 +152,31 @@ public class GameControllerScript : MonoBehaviour {
 			if(y ==1 && z == 1) {
 				return -2;
 			}
+			else {
+				return -1;
+			}
 		}
 
 		if(this.options.board_type == "Four Walls") {
 			if(x == 1 && z == 1) {
 				return -2;
 			}
+			else {
+				return -1;
+			}
 		}
 
-		
-		if(this.options.board_type == "No Corners") {
+
+		//default is no corners
+		//if(this.options.board_type == "No Corners") {
 			if(x == 1 || y == 1 || z == 1) {
 				return -1;
 			}
 			else {
 				return -2;
 			}
-		}
+		//}
 
-		//return the standard
-		return -1;
 	}
 
 	private List<Transform>  getEmptyBlocks (){

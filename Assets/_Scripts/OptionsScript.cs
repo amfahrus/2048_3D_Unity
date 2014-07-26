@@ -27,7 +27,6 @@ public class OptionsScript : MonoBehaviour {
 	void Start () {
 		this.gameScript = this.gameObject.GetComponent ("GameControllerScript") as GameControllerScript;
 		this.currentGUISkin = gameScript.currentGUISkin;
-
 		this.InitOptions();
 	}
 	
@@ -63,7 +62,7 @@ public class OptionsScript : MonoBehaviour {
 	 * Set up the options in PlayerPrefs if they do not already exist
 	 */
 
-	private void InitOptions() {
+	public void InitOptions() {
 		this.initOption ("use_0", false);
 		this.initOption ("play_sounds", true);
 		this.initOption ("board_type", "No Corners");
@@ -259,7 +258,7 @@ public class OptionsScript : MonoBehaviour {
 
 
 			//TIMER OPTIONS ####################################################
-			GUILayout.Label ("Timer Options", "Subheader");
+			GUILayout.Label ("Timer", "Subheader");
 
 			foreach (int i in this.GetTimerDurationTimes())
 			{
@@ -275,7 +274,7 @@ public class OptionsScript : MonoBehaviour {
 
 			
 			//Other OPTIONS ####################################################
-			GUILayout.Label ("Block Generation Options", "Subheader");
+			GUILayout.Label ("Block Numbers", "Subheader");
 
 			//Use Zeros
 			GUILayout.BeginHorizontal ();

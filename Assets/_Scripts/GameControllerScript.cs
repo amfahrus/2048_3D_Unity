@@ -11,16 +11,17 @@ public class GameControllerScript : MonoBehaviour {
 
 	public Transform block;
 	public Transform connector;
-	private Transform[,,] blocks = new Transform[3,3,3];
-	private Transform[,,] connectors = new Transform[3,3,3];
+	public Transform[,,] blocks = new Transform[3,3,3];
+	private Transform[,,,] connectors = new Transform[3,3,3,3];
 	private int cubeRotationX; //how much the original cube has been rotated around X axis
 	private int cubeRotationY; //how much the original cube has been rotated around Y axis
 	private int cubeRotationZ; //how much the original cube has been rotated around Z axis
 	private float moveStartTime = -1F;
-	public float scale = 3.5F;
+	public float scale = 3F;
 	public bool moving = false;
+	public bool rotating = false;
 	private float moveDuration = 0.10F;
-	private float yOffset;
+	public float yOffset;
 	private int score;
 	public GUISkin currentGUISkin;
 	public static bool performRestart = false;
@@ -49,9 +50,11 @@ public class GameControllerScript : MonoBehaviour {
 		int x; 
 		int y; 
 		int z;
+		int axis;
 		yOffset = 1F;
 		Transform blockInstance;
 		BlockScript blockScript; 
+		ConnectorScript connectorScript;
 		Transform connectorInstance;
 		TextMesh textMesh;
 
@@ -69,10 +72,11 @@ public class GameControllerScript : MonoBehaviour {
 		this.collideAudioSource = audioSources[1];
 		this.collideAudioSource.clip = this.collideSound;
 
-		//instantiate the blocks and position them
+		//instantiate the blocks and connectors and position them
 		for (x = 0; x <= 2; x++) {
 			for (y = 0; y <= 2; y++) {
 				for (z = 0; z <= 2; z++) {
+					//instantiate the block
 					blockInstance = Instantiate (block, new Vector3(x * this.scale, y * this.scale + this.yOffset, z * this.scale), Quaternion.identity) as Transform;
 					this.blocks[x,y,z] = blockInstance;
 					blockScript = blockInstance.gameObject.GetComponent("BlockScript") as BlockScript;
@@ -83,29 +87,32 @@ public class GameControllerScript : MonoBehaviour {
 				}
 			}
 		}
-	
-		//instantiate the connectors and position them 
-		for(int i=0; i <=2; i++) {
-			for(int j=0; j<= 2; j++) {
-				//up and down
-				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;
-				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
-				this.connectors[i,j,0] = connectorInstance;
 
-				//forward and backward
-				connectorInstance = Instantiate (connector, new Vector3(i * this.scale, j * this.scale + this.yOffset, this.scale), Quaternion.identity) as Transform;	
-				connectorInstance.Rotate(new Vector3(90,0,0));
-				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
-				this.connectors[i,j,1] = connectorInstance;
+		// instantiate the connectors
+		for (x = 0; x <= 2; x++) {
+			for (y = 0; y <= 2; y++) {
+				for (z = 0; z <= 2; z++) {
+					//instantiate the x connector
+					connectorInstance = Instantiate (connector) as Transform;
+					connectorScript = connectorInstance.gameObject.GetComponent("ConnectorScript") as ConnectorScript;
+					connectorScript.Initialize(x,y,z,"x", this);
+					this.connectors[x,y,z,0] = connectorInstance;
 
-				//left to right
-				connectorInstance = Instantiate (connector, new Vector3(this.scale, i * this.scale + this.yOffset, j * this.scale), Quaternion.identity) as Transform;	
-				connectorInstance.Rotate(new Vector3(0,0,90));
-				connectorInstance.renderer.material.color = new Color(0,0.5f,0);
-				this.connectors[i,j,2] = connectorInstance;
+					//instantiate the y connector
+					connectorInstance = Instantiate (connector) as Transform;
+					connectorScript = connectorInstance.gameObject.GetComponent("ConnectorScript") as ConnectorScript;
+					connectorScript.Initialize(x,y,z,"y", this);
+					this.connectors[x,y,z,1] = connectorInstance;
+
+					//instantiate the z connector
+					connectorInstance = Instantiate (connector) as Transform;
+					connectorScript = connectorInstance.gameObject.GetComponent("ConnectorScript") as ConnectorScript;
+					connectorScript.Initialize(x,y,z,"z", this);
+					this.connectors[x,y,z,2] = connectorInstance;
+				}
 			}
 		}
-
+	
 		//instantiate the move blocks
 		if (PlayerPrefs.HasKey ("game_status")) {
 			this.loadSavedGame();
@@ -121,10 +128,14 @@ public class GameControllerScript : MonoBehaviour {
 		blockScript.setBlockNumber(blockNumber);	
 	}
 
-	private int getBlockNumber ( Transform blockInstance  ){
+	public int getBlockNumber ( Transform blockInstance  ){
 		BlockScript blockScript; 
 		blockScript = blockInstance.gameObject.GetComponent("BlockScript") as BlockScript;
 		return blockScript.blockNumber;	
+	}
+
+	public int getBlockNumber(int x, int y, int z) {
+		return this.getBlockNumber (this.blocks [x, y, z]);
 	}
 
 	private int getInitialBlockNumber(int x, int y, int z) {
@@ -227,46 +238,46 @@ public class GameControllerScript : MonoBehaviour {
 		int j, k, axis;
 		ConnectorScript connectorScript;
 		bool show;
-		for (j = 0; j <= 2; j++) {
-		for (k = 0; k <= 2; k++) {
-		for (axis = 0; axis <= 2; axis++) {
-			connectorScript = this.connectors[j,k,axis].gameObject.GetComponent("ConnectorScript") as ConnectorScript;
-			connectorScript.show = true;
-
-			if (this.options.board_type == "Hollow Cube") {
-				if(j == 1 & k == 1) {
-					connectorScript.show = false;
-				}
-			}
-
-			if (this.options.board_type == "Box Outline") { //Box Outline
-				if(j == 1 || k == 1) {
-					connectorScript.show = false;
-				}
-			}
-					
-			if (this.options.board_type == "Four Walls") { 
-				//remove center connector on the x axis
-				if(axis == 0 && j == 1 & k == 1) {
-					connectorScript.show = false;
-				}
-				//remove 3 center connectors on the y axis
-				if(axis == 1 && j == 1) {
-					connectorScript.show = false;
-				}
-				//remove 3 center connectors on the z axis
-				if(axis == 2 && k == 1) {
-					connectorScript.show = false;
-				}
-			}
-
-			
-			if (this.options.board_type == "No Corners") { 
-				if(j != 1 && k != 1) {
-					connectorScript.show = false;
-				}
-			}
-		}}}
+//		for (j = 0; j <= 2; j++) {
+//		for (k = 0; k <= 2; k++) {
+//		for (axis = 0; axis <= 2; axis++) {
+//			connectorScript = this.connectors[j,k,axis].gameObject.GetComponent("ConnectorScript") as ConnectorScript;
+//			connectorScript.show = true;
+//
+//			if (this.options.board_type == "Hollow Cube") {
+//				if(j == 1 & k == 1) {
+//					connectorScript.show = false;
+//				}
+//			}
+//
+//			if (this.options.board_type == "Box Outline") { //Box Outline
+//				if(j == 1 || k == 1) {
+//					connectorScript.show = false;
+//				}
+//			}
+//					
+//			if (this.options.board_type == "Four Walls") { 
+//				//remove center connector on the x axis
+//				if(axis == 0 && j == 1 & k == 1) {
+//					connectorScript.show = false;
+//				}
+//				//remove 3 center connectors on the y axis
+//				if(axis == 1 && j == 1) {
+//					connectorScript.show = false;
+//				}
+//				//remove 3 center connectors on the z axis
+//				if(axis == 2 && k == 1) {
+//					connectorScript.show = false;
+//				}
+//			}
+//
+//			
+//			if (this.options.board_type == "No Corners") { 
+//				if(j != 1 && k != 1) {
+//					connectorScript.show = false;
+//				}
+//			}
+//		}}}
 	}
 
 	public bool doMove (string axis, int direction) {
@@ -709,6 +720,10 @@ public class GameControllerScript : MonoBehaviour {
 			GUI.skin = currentGUISkin;
 			this.gameLight.intensity = this.lightIntensity;
 			this.mainCamera.transform.eulerAngles = new Vector3 (16F, 29.5F, 0);
+
+			//create rotating buttons
+
+
 			
 			if (PlayerPrefs.GetString ("game_status") == "game_over") {
 				GUI.Label (new Rect (0, Screen.height * 0.3f , Screen.width, Screen.height * 0.10F), "Game Over", "BigLabel");
@@ -815,6 +830,10 @@ public class GameControllerScript : MonoBehaviour {
 			PlayerPrefs.SetString ("redo_moves2","");
 			PlayerPrefs.SetInt ("redos", PlayerPrefs.GetInt ("redos") - 1);
 		}
+	}
+
+	private void rotateBlocks(Vector3 direction) {
+		this.rotating = true;
 	}
 
 	private void loadSavedGame() {

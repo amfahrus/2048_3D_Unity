@@ -14,6 +14,9 @@ public class BlockScript : MonoBehaviour {
 	private float moveDuration = 0.1F;
 	private float scale = 0;
 
+	public static int emptyBlock = -1;
+	public static int voidBlock = -2;
+
 	// Use this for initialization
 	void Start () {
 		//this.originalPosition = transform.position;
@@ -34,8 +37,11 @@ public class BlockScript : MonoBehaviour {
 			}
 		}
 
+		//Vector3 rotationPoint = new Vector3 (3f, 4f, 3f);
+		
+		//transform.RotateAround(rotationPoint, Vector3.down, 20 * Time.deltaTime);
 	}
-
+	
 	public void move(string axis, int units, float scale, int newBlockNumber) {
 
 		//this.moveDuration = duration;

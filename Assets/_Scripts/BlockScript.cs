@@ -10,12 +10,28 @@ public class BlockScript : MonoBehaviour {
 	public Vector3 originalPosition;  //orginal position of the block
 	private int moveNewBlockNumber; //number to change to once the move has been completed
 	private float moveStartTime = -1F;  //amount of seconds since move started
+	private Vector3 rotateDirection;
+	private float rotationTotal = -1F;
+	private int rotateNewBlockNumber;
 	private Vector3 moveNewPosition;      //final destination of move
 	private float moveDuration = 0.1F;
 	private float scale = 0;
+	private float yOffset;
+	private GameControllerScript gameScript;
 
 	public static int emptyBlock = -1;
 	public static int voidBlock = -2;
+
+	
+	public void Initialize(int x, int y, int z, GameControllerScript gameScript) {
+		this.scale = gameScript.scale;
+		this.yOffset = gameScript.yOffset;
+		this.gameScript = gameScript;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.originalPosition = new Vector3(x * this.scale, y * this.scale + this.yOffset, z * this.scale);
+	}
 
 	// Use this for initialization
 	void Start () {
@@ -36,12 +52,23 @@ public class BlockScript : MonoBehaviour {
 				transform.position = this.originalPosition;
 			}
 		}
-
-		//Vector3 rotationPoint = new Vector3 (3f, 4f, 3f);
 		
-		//transform.RotateAround(rotationPoint, Vector3.down, 20 * Time.deltaTime);
+		if (this.rotationTotal >= 0F) {
+			float rotateBy = 90 * Time.deltaTime / this.moveDuration;
+			Vector3 rotationPoint = new Vector3 (3f, 4f, 3f);
+			transform.RotateAround(rotationPoint, this.rotateDirection, rotateBy);
+			this.rotationTotal += rotateBy;
+
+			if(rotationTotal >= 90) {
+				Debug.Log (rotationTotal);
+				this.rotationTotal = -1F;
+				transform.position = this.originalPosition;
+				transform.rotation = new Quaternion(0,0,0,1);
+				this.setBlockNumber(rotateNewBlockNumber);
+			}
+		}
 	}
-	
+
 	public void move(string axis, int units, float scale, int newBlockNumber) {
 
 		//this.moveDuration = duration;
@@ -56,6 +83,12 @@ public class BlockScript : MonoBehaviour {
 						this.moveNewPosition.y = this.originalPosition.y + (this.scale * units);
 		if (axis == "z")
 						this.moveNewPosition.z = this.originalPosition.z + (this.scale * units);
+	}
+
+	public void rotateBlock (Vector3 direction) {
+		this.rotateDirection = direction;
+		this.rotationTotal = 0;
+		this.rotateNewBlockNumber = this.GetNumberAfterRotation(direction);
 	}
 
 	public void setBlockNumber(int blockNumber) {
@@ -117,5 +150,25 @@ public class BlockScript : MonoBehaviour {
 		byte g = byte.Parse(hex.Substring(2,2), System.Globalization.NumberStyles.HexNumber);
 		byte b = byte.Parse(hex.Substring(4,2), System.Globalization.NumberStyles.HexNumber);
 		return new Color32(r,g,b, 255);
+	}
+
+	private int GetNumberAfterRotation(Vector3 direction) {
+		//rotating to the left
+		if(direction == Vector3.up) {
+			return gameScript.getBlockNumber (2-z,y,x);
+		}
+		//rotating to the right
+		if(direction == Vector3.down) {
+			return gameScript.getBlockNumber (z,y,2-x);
+		}
+		//rotating up
+		if(direction == Vector3.left) {
+			return gameScript.getBlockNumber (x,2-z,y);
+		}
+		//rotating down
+		if(direction == Vector3.right) {
+			return gameScript.getBlockNumber (x,z,2-y);
+		}
+		return 1;
 	}
 }

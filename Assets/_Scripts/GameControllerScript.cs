@@ -20,7 +20,7 @@ public class GameControllerScript : MonoBehaviour {
 	public float scale = 3F;
 	public bool moving = false;
 	public bool rotating = false;
-	private float moveDuration = 0.10F;
+	public float moveDuration = 0.10F;
 	public float yOffset;
 	private int score;
 	public GUISkin currentGUISkin;
@@ -80,10 +80,7 @@ public class GameControllerScript : MonoBehaviour {
 					blockInstance = Instantiate (block, new Vector3(x * this.scale, y * this.scale + this.yOffset, z * this.scale), Quaternion.identity) as Transform;
 					this.blocks[x,y,z] = blockInstance;
 					blockScript = blockInstance.gameObject.GetComponent("BlockScript") as BlockScript;
-					blockScript.originalPosition = new Vector3(x * this.scale, y * this.scale + this.yOffset, z * this.scale);
-					blockScript.x = x;
-					blockScript.y = y;
-					blockScript.z = z;
+					blockScript.Initialize(x,y,z,this);
 				}
 			}
 		}
@@ -755,6 +752,29 @@ public class GameControllerScript : MonoBehaviour {
 			if (GUI.Button(new Rect(Screen.width * .7f, Screen.height * 0.12F, Screen.width * .3f, Screen.height * 0.06F), "Undo (" + PlayerPrefs.GetInt ("redos").ToString () + ")")) {
 				this.undo();
 			}
+
+
+			//Roation buttons
+
+			
+			GUI.Label(new Rect(Screen.width * .8f, Screen.height * 0.72F, Screen.width * .1f, Screen.height * 0.06F), "", "RotateButton");
+	
+			//left button
+			if (GUI.Button(new Rect(Screen.width * .73f, Screen.height * 0.72F, Screen.width * .1f, Screen.height * 0.06F), "\u2190", "SmallLabel")) {
+				this.rotateBlocks(Vector3.up);
+			}
+			//right button
+			if (GUI.Button(new Rect(Screen.width * .87f, Screen.height * 0.72F, Screen.width * .1f, Screen.height * 0.06F), "\u2192", "SmallLabel")) {
+				this.rotateBlocks(Vector3.down);
+			}
+			//up button
+			if (GUI.Button(new Rect(Screen.width * .8f, Screen.height * 0.675F, Screen.width * .1f, Screen.height * 0.06F), "\u2191", "SmallLabel")) {
+				this.rotateBlocks(Vector3.right);
+			}
+			//down button
+			if (GUI.Button(new Rect(Screen.width * .8f, Screen.height * 0.765F, Screen.width * .1f, Screen.height * 0.06F), "\u2193", "SmallLabel")) {
+				this.rotateBlocks(Vector3.left);
+			}
 		}
 	}
 
@@ -833,7 +853,24 @@ public class GameControllerScript : MonoBehaviour {
 	}
 
 	private void rotateBlocks(Vector3 direction) {
+		Transform block;
+		BlockScript blockScript;
+		Transform connector;
+		ConnectorScript connectorScript;
 		this.rotating = true;
+		for (int x = 0; x <= 2; x++) {
+			for (int y = 0; y <= 2; y++) {
+				for (int z = 0; z <= 2; z++) {
+					block = this.blocks[x,y,z];
+					block.GetComponent<BlockScript>().rotateBlock(direction);
+
+					for(int axis = 0; axis <=2; axis++) {
+						connector  = this.connectors[x,y,z,axis];
+						connector.GetComponent<ConnectorScript>().rotateConnector (direction);
+					}
+				}
+			}
+		}
 	}
 
 	private void loadSavedGame() {

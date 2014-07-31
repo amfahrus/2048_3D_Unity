@@ -256,6 +256,14 @@ public class OptionsScript : MonoBehaviour {
 			GUILayout.Label ( "No Corners (19 Blocks)", "ToggleLabel");
 			GUILayout.EndHorizontal();
 
+			
+			GUILayout.BeginHorizontal ();
+			if (GUILayout.Toggle (this.board_type == "No Corners/Center", "No Corners/Center", currentGUISkin.toggle)) {
+				this.board_type = "No Corners/Center";
+			}
+			GUILayout.Label ( "No Corners/Center (18 Blocks)", "ToggleLabel");
+			GUILayout.EndHorizontal();
+
 
 			//TIMER OPTIONS ####################################################
 			GUILayout.Label ("Timer", "Subheader");

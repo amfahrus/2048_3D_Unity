@@ -174,6 +174,18 @@ public class GameControllerScript : MonoBehaviour {
 			}
 		}
 
+		//default is no corners
+		if(this.options.board_type == "No Corners/Center") {
+			if(x==1 && y==1 && z==1) {
+				return -2;
+			}
+			else if(x == 1 || y == 1 || z == 1) {
+				return -1;
+			}
+			else {
+				return -2;
+			}
+		}
 
 		//default is no corners
 		//if(this.options.board_type == "No Corners") {
@@ -184,6 +196,8 @@ public class GameControllerScript : MonoBehaviour {
 				return -2;
 			}
 		//}
+
+
 
 	}
 

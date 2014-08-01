@@ -58,6 +58,8 @@ public class MenuScript : MonoBehaviour {
 				this.gameScript.gameView = "game";
 			}
 
+			GUI.Label (new Rect (0, Screen.height * 0.94F, Screen.width, Screen.height * 0.06F), "(c) 2014 -  J. Reuben Wetherbee");
+
 		}
 	}
 }
